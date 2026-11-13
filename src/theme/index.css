@@ -1,0 +1,18 @@
+@import './tokens.css';
+@import './light.css';
+@import './dark.css';
+
+.bing-kbd {
+  box-sizing: border-box;
+  display: inline-block;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 3px;
+  border: 1px solid var(--bing-kbd-border, var(--bing-border));
+  border-radius: 4px;
+  text-align: center;
+  font: inherit;
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 16px;
+}

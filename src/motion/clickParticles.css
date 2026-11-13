@@ -1,0 +1,26 @@
+.bing-click-particles {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  overflow: hidden;
+  contain: strict;
+  pointer-events: none;
+}
+
+.bing-click-particles__shard {
+  position: absolute;
+  display: block;
+  border-radius: 0.5px;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.bing-click-particles__shard:nth-child(3n) {
+  clip-path: polygon(0 0, 100% 20%, 65% 100%, 10% 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bing-click-particles { display: none; }
+}

@@ -1,0 +1,140 @@
+.bing-table__header-cell,
+.bing-table__selection-cell.bing-table__selection-cell--head {
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  height: var(--_table-head-height);
+  border-bottom: 1px solid var(--_table-line);
+  background: var(--_table-header-bg);
+  color: var(--bing-heading);
+  font-weight: 500;
+  vertical-align: middle;
+}
+
+.bing-table__header-cell {
+  padding: 0;
+  text-align: left;
+}
+
+[data-bing-table-cell] { position: relative; outline: none; }
+[data-bing-table-cell]:focus-visible::after {
+  content: ''; position: absolute; inset: 1px; z-index: 3; pointer-events: none;
+  border-radius: 4px; box-shadow: inset 0 0 0 2px var(--_table-focus-ring);
+}
+@media (forced-colors: active) {
+  [data-bing-table-cell]:focus-visible::after { box-shadow: none; border: 2px solid Highlight; }
+  .bing-table__row.is-selected:not(.is-disabled) > td {
+    background: SelectedItem; color: SelectedItemText; forced-color-adjust: none;
+  }
+  .bing-table__row.is-selected :deep(button),
+  .bing-table__row.is-selected :deep(input) { forced-color-adjust: auto; }
+}
+
+.bing-table__header-cell.is-dnd-sortable {
+  cursor: grab;
+  touch-action: none;
+  will-change: transform;
+}
+
+.bing-table__selection-cell {
+  position: relative;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border-bottom: 1px solid var(--_table-line);
+  background: var(--bing-table-current-row-bg, var(--bing-table-row-bg));
+  text-align: center;
+  vertical-align: middle;
+}
+
+.bing-table__selection-cell.is-fixed-left {
+  position: sticky;
+  z-index: var(--bing-table-fixed-selection-z);
+}
+
+.bing-table__selection-cell--head.is-fixed-left {
+  z-index: var(--bing-table-fixed-selection-head-z);
+}
+
+.bing-table__cell {
+  position: relative;
+  box-sizing: border-box;
+  height: var(--_table-row-height);
+  padding: 0;
+  border-bottom: 1px solid var(--_table-line);
+  background: var(--bing-table-current-row-bg, var(--bing-table-row-bg));
+  color: var(--bing-text);
+  vertical-align: middle;
+  transition:
+    background var(--bing-duration-fast) var(--bing-ease-smooth),
+    box-shadow var(--bing-duration-fast) var(--bing-ease-smooth),
+    color var(--bing-duration-fast) var(--bing-ease-smooth),
+    opacity var(--bing-duration-fast) var(--bing-ease-smooth);
+}
+
+.bing-table__cell-content {
+  position: relative;
+  display: inline-flex;
+  box-sizing: border-box;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: calc(var(--_table-row-height) - 1px);
+  gap: 7px;
+  padding: var(--_table-cell-padding-y) var(--_table-cell-padding-x);
+}
+
+.bing-table__cell.is-align-center .bing-table__cell-content,
+.bing-table__header-cell.is-align-center .bing-table__header-content {
+  justify-content: center;
+}
+
+.bing-table__header-cell.is-align-center .bing-table__header-content {
+  text-align: center;
+}
+
+.bing-table__cell.is-align-right .bing-table__cell-content,
+.bing-table__header-cell.is-align-right .bing-table__header-content {
+  justify-content: flex-end;
+}
+
+.bing-table__header-cell.is-align-right .bing-table__header-content {
+  text-align: right;
+}
+
+.bing-table__cell.is-fixed-left,
+.bing-table__cell.is-fixed-right,
+.bing-table__header-cell.is-fixed-left,
+.bing-table__header-cell.is-fixed-right {
+  position: sticky;
+  z-index: var(--bing-table-fixed-z);
+  overflow: visible;
+}
+
+.bing-table__header-cell.is-fixed-left,
+.bing-table__header-cell.is-fixed-right {
+  z-index: var(--bing-table-fixed-head-z);
+}
+
+.bing-table.is-bordered .bing-table__header-cell,
+.bing-table.is-bordered .bing-table__selection-cell,
+.bing-table.is-bordered .bing-table__cell {
+  border-right: 1px solid var(--_table-line-strong);
+}
+
+.bing-table__header-cell.is-drag-over {
+  background:
+    linear-gradient(90deg, rgb(var(--bing-accent-rgb) / 0.045), transparent 30%),
+    var(--bing-table-row-bg);
+  box-shadow:
+    inset 2px 0 0 rgb(var(--bing-accent-rgb) / 0.62),
+    inset 5px 0 10px rgb(var(--bing-accent-rgb) / 0.035);
+}
+
+.bing-table__header-cell.is-dnd-dragging {
+  opacity: 0.52;
+}
+
+.bing-table:not(.is-reordering-columns) .bing-table__header-cell.is-dnd-dragging {
+  opacity: 1;
+}

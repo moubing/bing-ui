@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.app.json",
+  "include": [
+    "src/index.ts",
+    "src/components/**/*.ts",
+    "src/components/**/*.vue",
+    "src/icons/**/*.ts",
+    "src/motion/**/*.ts",
+    "src/utils/**/*.ts"
+  ],
+  "exclude": ["src/**/*.stories.ts", "src/**/*.test.ts"]
+}

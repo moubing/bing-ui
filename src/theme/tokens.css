@@ -1,0 +1,63 @@
+:root {
+  --bing-pink-50: #fdf2f8;
+  --bing-pink-100: #fce7f3;
+  --bing-pink-200: #fbcfe8;
+  --bing-pink-300: #f9a8d4;
+  --bing-pink-400: #f472b6;
+  --bing-pink-500: #ec4899;
+  --bing-pink-600: #db2777;
+  --bing-pink-700: #be185d;
+
+  --bing-purple-200: #e9d5ff;
+  --bing-purple-300: #d8b4fe;
+  --bing-purple-400: #c084fc;
+
+  --bing-sky-50: #f0f9ff;
+  --bing-sky-100: #e0f2fe;
+  --bing-sky-200: #bae6fd;
+  --bing-sky-300: #7dd3fc;
+  --bing-sky-400: #38bdf8;
+  --bing-sky-500: #0ea5e9;
+  --bing-sky-600: #0284c7;
+  --bing-sky-700: #0369a1;
+
+  --bing-slate-200: #e2e8f0;
+  --bing-slate-300: #cbd5e1;
+  --bing-slate-400: #94a3b8;
+  --bing-slate-500: #64748b;
+  --bing-slate-600: #475569;
+
+  --bing-emerald-50: #ecfdf5;
+  --bing-emerald-500: #10b981;
+  --bing-emerald-700: #047857;
+  --bing-red-50: #fef2f2;
+  --bing-red-500: #ef4444;
+  --bing-red-700: #b91c1c;
+  --bing-amber-50: #fffbeb;
+  --bing-amber-400: #fbbf24;
+  --bing-amber-700: #b45309;
+
+  --bing-radius-sm: 4px;
+  --bing-radius-md: 6px;
+  --bing-radius-lg: 12px;
+  --bing-control-height-sm: 32px;
+  --bing-control-height-md: 36px;
+  --bing-control-height-lg: 40px;
+  --bing-control-height-xs: 28px;
+  --bing-control-height-xl: 44px;
+  --bing-radius-popover: 8px;
+  --bing-tooltip-radius: 6px;
+  --bing-tooltip-shadow: 0 4px 14px rgb(0 0 0 / 0.08), 0 1px 3px rgb(0 0 0 / 0.06);
+  --bing-tooltip-padding: 6px 8px;
+  --bing-radius-card: 10px;
+  --bing-font-size-sm: 0.8125rem;
+  --bing-font-size-md: 0.875rem;
+  --bing-font-size-lg: 0.9375rem;
+  --bing-font-weight-control: 500;
+  --bing-font-weight-heading: 600;
+  --bing-glass-blur: 16px;
+  --bing-glass-saturation: 1.05;
+  --bing-duration-fast: 180ms;
+  --bing-duration-normal: 320ms;
+  --bing-ease-smooth: cubic-bezier(0.19, 1, 0.22, 1);
+}

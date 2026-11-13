@@ -1,0 +1,72 @@
+/* Input / Textarea 共用状态，优先级：禁用 > 语义状态 > 交互。 */
+.bing-text-control {
+  border: 1px solid var(--bing-control-border);
+  background: var(--bing-control-bg);
+  box-shadow: var(--bing-control-shadow);
+  color: var(--bing-heading);
+  cursor: text;
+  transition: border-color var(--bing-duration-fast) var(--bing-ease-smooth),
+    box-shadow var(--bing-duration-fast) var(--bing-ease-smooth),
+    background var(--bing-duration-fast) var(--bing-ease-smooth);
+}
+.bing-text-control:where(:hover, :focus-within) { border-color: var(--bing-control-hover-border); }
+.bing-text-control:where(:focus-within) { box-shadow: var(--bing-control-focus-shadow); }
+.bing-text-control:where(:has(.bing-text-control__action:focus)) { box-shadow: var(--bing-control-shadow); }
+.bing-text-control.is-readonly { background: var(--bing-surface-muted); cursor: default; }
+.bing-text-control.is-readonly:where(:hover:not(:focus-within)) { border-color: var(--bing-control-border); }
+.bing-text-control.is-readonly :where(input, textarea) { cursor: default; }
+.bing-text-control.is-error { --text-control-status-rgb: var(--bing-danger-rgb); }
+.bing-text-control.is-success { --text-control-status-rgb: var(--bing-success-rgb); }
+.bing-text-control.is-warning { --text-control-status-rgb: var(--bing-warning-rgb); }
+.bing-text-control:is(.is-error, .is-success, .is-warning) { border-color: rgb(var(--text-control-status-rgb)); }
+.bing-text-control:is(.is-error, .is-success, .is-warning):focus-within { box-shadow: 0 0 0 2px rgb(var(--text-control-status-rgb) / 0.22); }
+.bing-text-control.is-disabled, .bing-text-control.is-disabled:is(:hover, :focus-within) {
+  border-color: var(--bing-control-disabled-border);
+  background: var(--bing-control-disabled-bg);
+  box-shadow: none;
+  color: var(--bing-disabled-text);
+  cursor: not-allowed;
+}
+.bing-text-control input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--bing-control-bg) inset;
+  -webkit-text-fill-color: var(--bing-heading);
+  transition: background-color 9999s ease-out;
+}
+.bing-text-control .bing-text-control__clear {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.8);
+  pointer-events: none;
+  transition: opacity 0.1s ease, transform 0.1s ease, visibility 0.1s;
+}
+.bing-text-control .bing-text-control__clear.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  pointer-events: auto;
+  transition-duration: 0.14s;
+}
+.bing-text-control .bing-text-control__count { color: var(--bing-muted); font-size: 12px; white-space: nowrap; }
+.bing-text-control .bing-text-control__count.is-warning { color: var(--bing-warning); }
+.bing-text-control .bing-text-control__count:is(.is-danger, .is-limit) { color: var(--bing-danger); }
+.bing-text-control .bing-text-control__count.is-limit:not(.is-reduced) { animation: bing-text-control-limit 0.24s linear; }
+.bing-text-control.is-disabled .bing-text-control__count { color: var(--bing-disabled-text); }
+.bing-text-control__live {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.bing-text-control__spinner { animation: bing-text-control-spin 0.9s linear infinite; }
+.bing-text-control.is-motion-reduced, .bing-text-control.is-motion-reduced .bing-text-control__clear { transition: none; }
+.bing-text-control.is-motion-reduced .bing-text-control__spinner { animation: bing-text-control-breathe 1.6s ease-in-out infinite; }
+@keyframes bing-text-control-spin { to { transform: rotate(360deg); } }
+@keyframes bing-text-control-breathe { 50% { opacity: 0.45; } }
+@keyframes bing-text-control-limit { 20%, 60% { transform: translateX(-2px); } 40%, 80% { transform: translateX(2px); } }
+@media (prefers-reduced-motion: reduce) {
+  .bing-text-control, .bing-text-control .bing-text-control__clear { transition: none; }
+  .bing-text-control .bing-text-control__count.is-limit { animation: none; }
+  .bing-text-control__spinner { animation: bing-text-control-breathe 1.6s ease-in-out infinite; }
+}
+@media (forced-colors: active) {
+  .bing-text-control:focus-within { outline: 2px solid Highlight; outline-offset: 2px; }
+  .bing-text-control.is-error { border-width: 2px; }
+}

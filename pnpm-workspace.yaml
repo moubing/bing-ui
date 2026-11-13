@@ -1,0 +1,10 @@
+packages:
+  - .
+
+allowBuilds:
+  esbuild: false
+
+enableGlobalVirtualStore: false
+
+pmOnFail: download
+verifyDepsBeforeRun: warn

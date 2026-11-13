@@ -1,0 +1,10 @@
+# 只忽略演示数据的固定编号；继续启用全部默认密钥检测规则。
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "本地生成 JSON 中的固定 fixture 编号"
+condition = "AND"
+paths = ['''^public/mock-files/sample\.json$''']
+regexTarget = "secret"
+regexes = ['''^fixture-[0-9]{4}$''']
