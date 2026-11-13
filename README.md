@@ -7,13 +7,15 @@
 <p align="center"><strong>让界面，动得恰到好处。</strong></p>
 <p align="center">Vue 3 · TypeScript · GSAP · 40 个组件文档页 · 浅色 / 深色 / 跟随系统</p>
 
+**[在线演示 · Storybook](https://101.35.217.21:6007/?path=/docs/components-binganimatedtext--docs)** · [使用文档](https://101.35.217.21:6008/docs) · [npm 包](https://www.npmjs.com/package/@moubing/bing-ui) · [相关项目](#相关项目)
+
 Bing UI 是一套面向创意交互和真实产品场景的 Vue 3 组件库。它以中性配色、清晰边界和轻磨砂建立安静的视觉基础，把文字反馈、卡片翻面、面板转场与平滑滚动融入日常操作，适合构建工作台、内容工具、配置面板和需要细腻反馈的应用。
 
 从按钮、表单到虚拟化表格、文件预览和可调整布局，组件通过显式的 Props、Emits、Slots 和 TypeScript 类型组合使用。当前仓库版本为 **0.19.0**，版本变化见 [更新日志](CHANGELOG.md)，跨版本接入见[版本升级指南](https://101.35.217.21:6008/docs/upgrade)。
 
-[![Bing UI 组件总览：按钮状态、角色多选、日期与颜色、滑块、内容卡片、数据表格和代码高亮](docs/images/components-overview-light.png)](docs/images/components-overview-light.png)
+[![Bing UI 生产组件总览：按钮状态、角色多选、日期与颜色、滑块、内容卡片、数据表格和代码高亮](docs/images/overview-production.jpg)](docs/images/overview-production.jpg)
 
-*实际组件截图：Storybook「Design / 组件总览 / 组件与交互」。集中展示操作反馈、输入选择、卡片内容、数据协作与代码展示，点击图片可查看原图。*
+*2026-11-14 截取自生产 Storybook「Design / 组件总览 / 组件与交互」，展示真实组件的浅色状态。点击图片可查看原图，动态效果可在上方在线演示中体验。*
 
 [设计与交互](#设计与交互) · [快速开始](#快速开始) · [组件一览](#组件一览) · [交互细节](#交互细节) · [主题与外观](#主题与外观) · [本地开发](#本地开发) · [进一步阅读](#进一步阅读)
 
@@ -159,11 +161,9 @@ Teleport 浮层在客户端挂载后创建，服务端保留页面和控件本�
 
 ### 表格与复杂交互
 
-[![BingTable 数据工作台：搜索框、已选行、状态标签、完成进度、排序入口和列设置](docs/images/table.png)](docs/images/table.png)
-
-*总览中的表格特写：选中行、状态标签与进度可同时展示，顶部搜索框与状态标签能联动筛选数据。*
-
 `BingTable` 将数据、列定义和交互状态分开管理。通过 `v-model` 可以控制选择、展开、分页、排序和列设置；`remoteSort` 与 `remotePagination` 分别用于服务端排序和分页。多个表格需要共用列偏好时，可使用 `BingTableColumnControls`。
+
+开篇总览展示当前表格的默认斑马纹、选中行、状态标签与进度；搜索框与状态标签能联动筛选数据。完整用法见[线上 Table 文档](https://101.35.217.21:6008/docs/components/table)。
 
 Storybook 的「Composition / 组件联动」进一步展示弹窗内表单、表格内操作控件，以及表单尺寸和禁用状态的传递。
 
@@ -171,37 +171,27 @@ Storybook 的「Composition / 组件联动」进一步展示弹窗内表单、�
 
 ### 卡片的内容、操作与背面
 
-`BingCard` 通过插槽容纳资源列表、图标、状态标签和操作按钮，点击或长按可以切换到背面。下面是同一张卡片翻面前后的实际状态：
-
-| 正面：资源列表与底部操作 | 背面：补充信息与返回提示 |
-| :---: | :---: |
-| [![卡片正面，展示资源列表、图标、同步状态与操作按钮](docs/images/card-front.png)](docs/images/card-front.png) | [![卡片翻面后，展示扩展详情和返回提示](docs/images/card-back.png)](docs/images/card-back.png) |
+`BingCard` 通过插槽容纳资源列表、图标、状态标签和操作按钮，点击或长按可以切换到背面。开篇总览右上角展示资源卡片正面，可在线点击卡片标题体验翻面。
 
 总览示例使用默认内容、`footer` 和 `back` 插槽组织信息；卡片中的按钮保留自己的点击操作。倾斜、反光、入场和翻面效果可以在 Storybook 中实际体验。
 
 ### 多选状态与候选详情
 
-选中的内容以可移除标签显示，展开后可以继续勾选、全选或查看禁用状态。悬停候选项时，旁侧详情面板展示补充说明和元数据，适合需要解释选项含义的场景。
+选中的内容以可移除标签显示，展开后可以搜索、继续勾选或全选，并查看当前选择计数。下面是生产总览中“协作角色”的展开状态：
 
-[![BingSelect 展开特写，包含已选标签、多选勾选框、禁用选项与悬停详情面板](docs/images/select-details.png)](docs/images/select-details.png)
+[![生产 Storybook 中的多选交互：已选标签、搜索、全选计数与候选勾选框](docs/images/select-production.jpg)](docs/images/select-production.jpg)
 
-*实际组件截图：Storybook「Components / BingSelect / 多选」。总览中的协作角色选择器另展示了搜索过滤能力。*
+需要解释选项含义时，可配置描述和详情内容。完整行为与示例见[线上 Select 文档](https://101.35.217.21:6008/docs/components/select)。
 
 ### 颜色、透明度与预设色板
 
-`BingColorPicker` 在同一个面板中提供二维取色、色相、透明度、预设色板、格式切换和颜色值复制。下图展示展开后的完整面板，可以直接看到各项调节能力。
-
-<p align="center">
-  <a href="docs/images/color-picker.png"><img src="docs/images/color-picker.png" width="420" alt="BingColorPicker 展开特写，包含取色区域、色相、透明度、预设色板、HEX 输入与复制按钮"></a>
-</p>
-
-*实际组件截图：Storybook「Components / BingColorPicker / 自定义色板」。*
+`BingColorPicker` 在同一个面板中提供二维取色、色相、透明度、预设色板、格式切换和颜色值复制。可在总览的“标记颜色”或[线上 ColorPicker 文档](https://101.35.217.21:6008/docs/components/color-picker)中展开体验。
 
 ## 主题与外观
 
 默认浅色主题采用中性灰黑、白色表面、细边框和轻阴影；深色主题使用炭灰表面。配色、尺寸和磨砂参数集中在 [主题样式](src/theme/index.css)。
 
-[![Bing UI 深色组件总览：按钮、表单控件、卡片、表格与代码高亮共用主题变量](docs/images/components-overview-dark.png)](docs/images/components-overview-dark.png)
+[![Bing UI 生产深色总览：按钮、表单控件、卡片、表格与代码高亮共用主题变量](docs/images/overview-dark-production.jpg)](docs/images/overview-dark-production.jpg)
 
 *与开篇相同的组件总览，切换为深色主题；输入状态、表格选中行、标签和代码配色一同变化。*
 
@@ -298,8 +288,14 @@ docs/                      # 接入说明、设计记录与 README 配图
 - [开发约定](AGENTS.md)：目录规范、动效原则和验证要求。
 - [组件联动示例源码](src/components/Composition.stories.ts)：查看表单、弹窗和表格如何组合。
 - [组件总览示例源码](.storybook/ReadmeShowcase.vue)：查看 README 中的组件组合，或在 Storybook「Design / 组件总览 / 组件与交互」中操作并更新配图。
-- [Bing UI Docs](https://github.com/moubing/bing-ui-docs)：基于 Nuxt 的使用文档站，包含快速开始、40 个组件页面、版本升级指南、完整示例和 `llms.txt` AI 文档入口。发布时同步核对两个仓库的版本与统计，组件页验证不替代导读和部署验收。
-- [Requirement Board](https://github.com/moubing/requirement-board)：实际使用本组件库的文档协作、版本与富文本差异工具。
-- [公开发布说明](docs/publication.md)：发布范围、排除项、独立历史与第三方许可说明。
 
-本文七张效果图均来自本仓库的实际 Storybook 页面，使用 2 倍像素密度保存到 `docs/images/`。点击图片可查看原图；阅读 README 无需启动开发服务，动态交互可在对应 Storybook 示例中体验。
+## 相关项目
+
+| 项目 | 职责 | 在线入口 |
+| --- | --- | --- |
+| [Bing UI Docs](https://github.com/moubing/bing-ui-docs) | 快速开始、40 个组件页面、升级指南、完整示例和 AI 文档 | [使用文档](https://101.35.217.21:6008/docs) |
+| [Requirement Board](https://github.com/moubing/requirement-board) | 实际使用本组件库的文档协作、版本管理与富文本 Diff 产品 | [游客体验](https://101.35.217.21/demo/) |
+
+组件库与文档站发布时同步核对版本及统计，组件页验证不替代全站导读验收。本文三张界面配图均于 2026-11-14 从生产 Storybook 截取，并裁去页面空白边缘；图片保存在 `docs/images/`，阅读 README 无需启动开发服务。
+
+公开发布范围、排除项及第三方许可说明见[公开发布说明](docs/publication.md)。
