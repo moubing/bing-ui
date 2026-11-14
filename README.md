@@ -6,16 +6,22 @@
 
 <p align="center"><strong>让界面，动得恰到好处。</strong></p>
 <p align="center">Vue 3 · TypeScript · GSAP · 40 个组件文档页 · 浅色 / 深色 / 跟随系统</p>
+<p align="center">
+  <a href="https://www.npmjs.com/package/@moubing/bing-ui"><img src="https://img.shields.io/npm/v/%40moubing%2Fbing-ui?label=npm" alt="npm 版本"></a>
+  <a href="https://www.npmjs.com/package/@moubing/bing-ui"><img src="https://img.shields.io/npm/types/%40moubing%2Fbing-ui" alt="自带 TypeScript 类型"></a>
+</p>
 
 **[在线演示 · Storybook](https://101.35.217.21:6007/?path=/docs/components-binganimatedtext--docs)** · [使用文档](https://101.35.217.21:6008/docs) · [npm 包](https://www.npmjs.com/package/@moubing/bing-ui) · [相关项目](#相关项目)
 
 Bing UI 是一套面向创意交互和真实产品场景的 Vue 3 组件库。它以中性配色、清晰边界和轻磨砂建立安静的视觉基础，把文字反馈、卡片翻面、面板转场与平滑滚动融入日常操作，适合构建工作台、内容工具、配置面板和需要细腻反馈的应用。
 
+组件库由我独立设计和开发，已发布到 npm，并作为 [Requirement Board](https://github.com/moubing/requirement-board) 和[文档站](https://github.com/moubing/bing-ui-docs)的界面基础在生产环境使用。
+
 从按钮、表单到虚拟化表格、文件预览和可调整布局，组件通过显式的 Props、Emits、Slots 和 TypeScript 类型组合使用。当前仓库版本为 **0.19.0**，版本变化见 [更新日志](CHANGELOG.md)，跨版本接入见[版本升级指南](https://101.35.217.21:6008/docs/upgrade)。
 
 [![Bing UI 生产组件总览：按钮状态、角色多选、日期与颜色、滑块、内容卡片、数据表格和代码高亮](docs/images/overview-production.jpg)](docs/images/overview-production.jpg)
 
-*2026-11-14 截取自生产 Storybook「Design / 组件总览 / 组件与交互」，展示真实组件的浅色状态。点击图片可查看原图，动态效果可在上方在线演示中体验。*
+*生产 Storybook 的「Design / 组件总览 / 组件与交互」（2026-11-14）。点击图片查看原图，动效请到在线演示中体验。*
 
 [设计与交互](#设计与交互) · [快速开始](#快速开始) · [组件一览](#组件一览) · [交互细节](#交互细节) · [主题与外观](#主题与外观) · [本地开发](#本地开发) · [进一步阅读](#进一步阅读)
 
@@ -36,6 +42,14 @@ Bing UI 是一套面向创意交互和真实产品场景的 Vue 3 组件库。�
 - **数据工作台**：表格支持树形行、行选择、分页、排序、固定列、列宽调整和虚拟滚动；可配合独立列设置、分栏和尺寸调整组件。
 - **内容工具**：图片、图片预览、文件预览与代码块覆盖常见内容展示，配合菜单、弹窗、提示和消息反馈完成操作流程。
 - **主题适配**：浅色、深色和系统主题共享语义变量，支持品牌色覆盖；有磨砂能力的组件可以切换为实色表面。
+
+### 把工程细节做扎实
+
+- **按需打包**：以纯 ESM 多文件产物发布，Vue、GSAP 和其余运行时依赖全部外置，打包器只包含实际导入的组件；Shiki 的语法与主题在首次高亮时才加载。
+- **支持 SSR**：服务端渲染页面和控件本体，Teleport 浮层在客户端挂载后创建，可以直接用于 Nuxt。
+- **动效可控**：动画限定在组件实例内，卸载时清理；`BingConfigProvider` 统一 JS 动效策略，默认跟随系统的减少动态效果设置。
+- **测试与发版**：70 个测试文件、774 项单元与组件测试（2026-11-14 运行通过），另有 51 个无头浏览器测试文件；用 Changesets 管理版本，[更新日志](CHANGELOG.md)记录了 0.4.0 以来的每次发布。
+- **在真实产品中验证**：Requirement Board 使用中发现的组件问题回到本仓库修复并发版，不在业务项目里加兼容层；组件改动要求同步更新文档站的正文、API 和示例。
 
 ## 快速开始
 
@@ -248,7 +262,7 @@ Storybook 默认使用 `6006` 端口，端口被占用时自动寻找下一个�
 | `pnpm changeset` | 为需要发版的改动记录变更说明 |
 | `pnpm version-packages` | 根据 Changesets 更新版本 |
 
-视觉回归在组件迭代阶段暂停，仅在明确需要时运行 `pnpm test:visual`，不随日常验证更新截图基线。纯文档修改通常无需构建；逻辑改动运行单元测试，涉及公开 API / 构建的改动再执行构建，界面改动需用无头 Playwright 检查受影响的 Storybook 页面。
+按改动选择验证：逻辑改动运行单元测试，涉及公开 API 或构建的改动再执行构建，界面改动用无头 Playwright 检查受影响的 Storybook 页面；纯文档修改通常无需构建。视觉回归（`pnpm test:visual`）目前只在明确需要时运行，不随日常验证更新截图基线。
 
 浏览器测试默认使用无头模式。内置 Chromium 不可用时，可以为本次测试临时设置 `BING_UI_BROWSER_CHANNEL=chrome` 或 `msedge`；运行后恢复环境变量，不把本机浏览器路径提交到仓库。
 
@@ -291,11 +305,13 @@ docs/                      # 接入说明、设计记录与 README 配图
 
 ## 相关项目
 
+三个仓库构成一条完整的链路：本组件库发布到 npm，文档站说明并验证用法，Requirement Board 在真实产品中使用它。
+
 | 项目 | 职责 | 在线入口 |
 | --- | --- | --- |
 | [Bing UI Docs](https://github.com/moubing/bing-ui-docs) | 快速开始、40 个组件页面、升级指南、完整示例和 AI 文档 | [使用文档](https://101.35.217.21:6008/docs) |
 | [Requirement Board](https://github.com/moubing/requirement-board) | 实际使用本组件库的文档协作、版本管理与富文本 Diff 产品 | [游客体验](https://101.35.217.21/demo/) |
 
-组件库与文档站发布时同步核对版本及统计，组件页验证不替代全站导读验收。本文三张界面配图均于 2026-11-14 从生产 Storybook 截取，并裁去页面空白边缘；图片保存在 `docs/images/`，阅读 README 无需启动开发服务。
+本文三张配图于 2026-11-14 截取自生产 Storybook，保存在 `docs/images/`。发布新版本时，本文的版本号、安装命令和文档页数由文档站的发布检查脚本核对。
 
 公开发布范围、排除项及第三方许可说明见[公开发布说明](docs/publication.md)。
