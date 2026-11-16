@@ -346,6 +346,44 @@ describe('BingTabs', () => {
     expect(fromTo.mock.calls.some(([target]) => contentElements.includes(target as Element))).toBe(false)
   })
 
+  it('converts indicator measurements back to layout pixels inside a scaled container', async () => {
+    const fromTo = vi.spyOn(gsap, 'fromTo')
+    const wrapper = mount(BingTabs, {
+      props: {
+        items,
+        modelValue: 'overview',
+      },
+      attachTo: document.body,
+    })
+
+    const root = wrapper.get('.bing-tabs').element as HTMLElement
+    const indicator = wrapper.get('.bing-tabs__indicator').element as HTMLElement
+    const tabs = wrapper.findAll('[role="tab"]').map((tab) => tab.element as HTMLElement)
+    const surfaces = tabs.map(
+      (tab) => tab.querySelector('.bing-tabs__tab-surface') as HTMLElement,
+    )
+
+    // 与上一个用例相同的布局，但整体处在 transform: scale(2) 的容器里：视口矩形全部翻倍，布局尺寸不变。
+    Object.defineProperty(root, 'offsetWidth', { value: 320, configurable: true })
+    Object.defineProperty(root, 'offsetHeight', { value: 52, configurable: true })
+    Object.defineProperty(root, 'clientLeft', { value: 1, configurable: true })
+    Object.defineProperty(root, 'clientTop', { value: 1, configurable: true })
+    root.getBoundingClientRect = () => rect(0, 0, 640, 104)
+    surfaces[0].getBoundingClientRect = () => rect(12, 12, 184, 80)
+    surfaces[1].getBoundingClientRect = () => rect(208, 12, 192, 80)
+    indicator.getBoundingClientRect = () => rect(12, 12, 184, 80)
+
+    await wrapper.setProps({ modelValue: 'details' })
+    await waitForAnimationFrame()
+
+    const indicatorCall = fromTo.mock.calls.find(([target]) => target === indicator)
+
+    expect(indicatorCall?.[1]).toMatchObject({ x: 5, y: 5, scaleX: expect.closeTo(92 / 96, 5), scaleY: 1 })
+    expect(indicatorCall?.[2]).toMatchObject({ x: 103, y: 5, scaleX: 1, scaleY: 1 })
+    expect(indicator.style.width).toBe('96px')
+    expect(indicator.style.height).toBe('40px')
+  })
+
   it('supports custom item slot content', () => {
     const wrapper = mount(BingTabs, {
       props: {

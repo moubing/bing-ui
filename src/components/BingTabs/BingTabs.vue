@@ -13,6 +13,7 @@ import {
   watch,
 } from 'vue'
 import { gsap } from 'gsap'
+import { getLayoutScale } from '../../motion/layoutScale'
 import { useReducedMotion } from '../../motion/reducedMotion'
 import { useConfigSize } from '../../utils/config'
 import {
@@ -120,6 +121,10 @@ function getBorderWidth(element: HTMLElement, side: 'left' | 'top') {
     : (side === 'left' ? element.clientLeft : element.clientTop)
 }
 
+/**
+ * 外层容器带 transform: scale 时，getBoundingClientRect 返回的是缩放后的视口尺寸，
+ * 而写回指示器的是缩放前的布局尺寸。这里求出两者的比例，供测量值换算回布局坐标。
+ */
 function isItemDisabled(item: BingTabItem) {
   return props.disabled || Boolean(item.disabled)
 }
@@ -395,16 +400,17 @@ function moveIndicator(animate = true) {
   const indicatorRect = indicator.getBoundingClientRect()
   const rootBorderLeft = getBorderWidth(root, 'left')
   const rootBorderTop = getBorderWidth(root, 'top')
-  const nextWidth = Math.max(1, tabRect.width)
-  const nextHeight = Math.max(1, tabRect.height)
+  const scale = getLayoutScale(root, rootRect)
+  const nextWidth = Math.max(1, tabRect.width / scale.x)
+  const nextHeight = Math.max(1, tabRect.height / scale.y)
   // Convert viewport rectangles into the scrollable content coordinate space.
-  const nextX = tabRect.left - rootRect.left - rootBorderLeft + root.scrollLeft
-  const nextY = tabRect.top - rootRect.top - rootBorderTop
+  const nextX = (tabRect.left - rootRect.left) / scale.x - rootBorderLeft + root.scrollLeft
+  const nextY = (tabRect.top - rootRect.top) / scale.y - rootBorderTop
   const hasCurrentRect = hasPositionedIndicator.value && indicatorRect.width > 0 && indicatorRect.height > 0
-  const previousX = hasCurrentRect ? indicatorRect.left - rootRect.left - rootBorderLeft + root.scrollLeft : nextX
-  const previousY = hasCurrentRect ? indicatorRect.top - rootRect.top - rootBorderTop : nextY
-  const previousScaleX = hasCurrentRect ? indicatorRect.width / nextWidth : 1
-  const previousScaleY = hasCurrentRect ? indicatorRect.height / nextHeight : 1
+  const previousX = hasCurrentRect ? (indicatorRect.left - rootRect.left) / scale.x - rootBorderLeft + root.scrollLeft : nextX
+  const previousY = hasCurrentRect ? (indicatorRect.top - rootRect.top) / scale.y - rootBorderTop : nextY
+  const previousScaleX = hasCurrentRect ? indicatorRect.width / scale.x / nextWidth : 1
+  const previousScaleY = hasCurrentRect ? indicatorRect.height / scale.y / nextHeight : 1
   const shouldAnimate = animate && hasCurrentRect && !shouldReduceMotion()
 
   indicatorTween?.kill()

@@ -71,11 +71,11 @@ function getSurface(tab: HTMLElement) {
   return surface
 }
 
-function expectRectsToMatch(actual: DOMRect, expected: DOMRect) {
-  expect(Math.abs(actual.left - expected.left)).toBeLessThanOrEqual(0.55)
-  expect(Math.abs(actual.top - expected.top)).toBeLessThanOrEqual(0.55)
-  expect(Math.abs(actual.width - expected.width)).toBeLessThanOrEqual(0.55)
-  expect(Math.abs(actual.height - expected.height)).toBeLessThanOrEqual(0.55)
+function expectRectsToMatch(actual: DOMRect, expected: DOMRect, tolerance = 0.55) {
+  expect(Math.abs(actual.left - expected.left)).toBeLessThanOrEqual(tolerance)
+  expect(Math.abs(actual.top - expected.top)).toBeLessThanOrEqual(tolerance)
+  expect(Math.abs(actual.width - expected.width)).toBeLessThanOrEqual(tolerance)
+  expect(Math.abs(actual.height - expected.height)).toBeLessThanOrEqual(tolerance)
 }
 
 afterEach(() => {
@@ -253,4 +253,27 @@ it('keeps the indicator under the selected tab after scrolling and resizing', as
   await wait(50)
   expect(tabs[0].getAttribute('aria-selected')).toBe('true')
   expectRectsToMatch(indicator.getBoundingClientRect(), getSurface(tabs[0]).getBoundingClientRect())
+})
+
+it.each([0.75, 1.34, 2])('keeps the indicator under the selected tab inside a container scaled by %s', async (scale) => {
+  const { host } = mountTabs(Array.from({ length: 4 }, (_, i) => ({ value: i, label: '工作区 ' + (i + 1) })))
+  host.style.transform = 'scale(' + scale + ')'
+  host.style.transformOrigin = '0 0'
+  const root = host.querySelector<HTMLElement>('.bing-tabs')!
+  const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'))
+  const indicator = root.querySelector<HTMLElement>('.bing-tabs__indicator')!
+  // 指示器宽高会被取整到整数布局像素，这部分误差随容器一起放大，容差按缩放比例换算。
+  const tolerance = 0.55 * Math.max(1, scale)
+  // 缩放发生在首次定位之后：点击切换时重新测量，必须落在缩放后的标签上。
+  await waitFor(() => root.classList.contains('is-indicator-ready'))
+  tabs[0].click()
+  await nextTick()
+  await wait(50)
+  expect(tabs[0].getAttribute('aria-selected')).toBe('true')
+  expect(host.getBoundingClientRect().width).toBeCloseTo(520 * scale, 1)
+  expectRectsToMatch(indicator.getBoundingClientRect(), getSurface(tabs[0]).getBoundingClientRect(), tolerance)
+  tabs[3].click()
+  await nextTick()
+  await wait(50)
+  expectRectsToMatch(indicator.getBoundingClientRect(), getSurface(tabs[3]).getBoundingClientRect(), tolerance)
 })
