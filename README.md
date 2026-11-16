@@ -11,7 +11,7 @@
   <a href="https://www.npmjs.com/package/@moubing/bing-ui"><img src="https://img.shields.io/npm/types/%40moubing%2Fbing-ui" alt="自带 TypeScript 类型"></a>
 </p>
 
-**[在线演示 · Storybook](https://101.35.217.21:6007/?path=/docs/components-binganimatedtext--docs)** · [使用文档](https://101.35.217.21:6008/docs) · [npm 包](https://www.npmjs.com/package/@moubing/bing-ui) · [相关项目](#相关项目)
+**[在线演示 · Storybook](https://101.35.217.21:6007/?path=/docs/components-binganimatedtext--docs)** · [宣传片](https://101.35.217.21:6007/promo.html) · [使用文档](https://101.35.217.21:6008/docs) · [npm 包](https://www.npmjs.com/package/@moubing/bing-ui) · [相关项目](#相关项目)
 
 Bing UI 是一套面向创意交互和真实产品场景的 Vue 3 组件库。它以中性配色、清晰边界和轻磨砂建立安静的视觉基础，把文字反馈、卡片翻面、面板转场与平滑滚动融入日常操作，适合构建工作台、内容工具、配置面板和需要细腻反馈的应用。
 
