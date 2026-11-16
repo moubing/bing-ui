@@ -440,7 +440,7 @@ watch(activeValue, (value, previousValue) => {
   min-height: 320px;
   overflow: visible;
   border-radius: var(--bing-radius-card);
-  perspective: 1200px;
+  /* 卡片只做平面内的位移、缩放和旋转，这里不设 perspective：它不改变画面，却会让浏览器把卡片按近似精度栅格化，文字发虚。 */
   touch-action: pan-y;
   transform-style: preserve-3d;
   will-change: transform;

@@ -114,6 +114,55 @@ describe('BingCard', () => {
     )
   })
 
+  it('keeps the surface hidden until the entrance starts, so it never shows a finished frame first', async () => {
+    let deliver: (() => void) | undefined
+    class DeferredIntersectionObserver {
+      private readonly callback: IntersectionObserverCallback
+
+      constructor(callback: IntersectionObserverCallback) {
+        this.callback = callback
+      }
+
+      disconnect = vi.fn()
+      observe = vi.fn((target: Element) => {
+        // 真实浏览器里观察结果要等下一帧才送达。
+        deliver = () => this.callback(
+          [{ isIntersecting: true, target } as IntersectionObserverEntry],
+          this as unknown as IntersectionObserver,
+        )
+      })
+    }
+    vi.stubGlobal('IntersectionObserver', DeferredIntersectionObserver)
+
+    const wrapper = mount(BingCard, { props: { entrance: 'fade-up' }, slots: { default: 'Card' } })
+    await wrapper.vm.$nextTick()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.attributes('data-entrance-pending')).toBe('')
+    expect(wrapper.emitted('enter')).toBeUndefined()
+
+    deliver?.()
+
+    expect(wrapper.attributes('data-entrance-pending')).toBeUndefined()
+    expect(wrapper.emitted('enter')).toHaveLength(1)
+  })
+
+  it('does not hide a disabled card or one that needs no entrance', async () => {
+    class IdleIntersectionObserver {
+      disconnect = vi.fn()
+      observe = vi.fn()
+    }
+    vi.stubGlobal('IntersectionObserver', IdleIntersectionObserver)
+
+    const disabled = mount(BingCard, { props: { entrance: 'fade-up', disabled: true }, slots: { default: 'Card' } })
+    const plain = mount(BingCard, { props: { entrance: 'none' }, slots: { default: 'Card' } })
+    await disabled.vm.$nextTick()
+    await disabled.vm.$nextTick()
+
+    expect(disabled.attributes('data-entrance-pending')).toBeUndefined()
+    expect(plain.attributes('data-entrance-pending')).toBeUndefined()
+  })
+
   it('does not let pointer tilt interrupt an active entrance animation', async () => {
     mockVisibleIntersectionObserver()
     const fromToSpy = vi.spyOn(gsap, 'fromTo')
@@ -430,6 +479,44 @@ describe('BingCard', () => {
 
     expect(wrapper.emitted('flip')?.[1]).toEqual(['front'])
     expect(wrapper.classes()).not.toContain('is-flipped')
+  })
+
+  it('drops perspective once the back face has settled, and restores it before the surface moves again', async () => {
+    const toSpy = vi.spyOn(gsap, 'to')
+    const wrapper = mount(BingCard, {
+      props: { entrance: 'none', flipAxis: 'y', flipTrigger: 'click' },
+      slots: { default: 'Front face', back: 'Back face' },
+    })
+    const surface = wrapper.get('.bing-card__surface').element
+    vi.spyOn(wrapper.element, 'getBoundingClientRect').mockReturnValue(rect(200, 100))
+    /** 把最近一次作用在卡面上的补间直接走完。 */
+    const finish = () => {
+      const index = toSpy.mock.calls.map(([target]) => target).lastIndexOf(surface)
+      ;(toSpy.mock.results[index]!.value as gsap.core.Tween).progress(1)
+    }
+
+    await wrapper.trigger('click')
+    // 翻面途中需要透视。
+    expect(wrapper.attributes('data-flat')).toBeUndefined()
+
+    finish()
+    expect(wrapper.attributes('data-flat')).toBe('')
+    expect(gsap.getProperty(surface, 'transformPerspective')).toBe(0)
+
+    // 在背面上倾斜：透视先直接写回，不从 0 插值上来。
+    await wrapper.trigger('pointermove', { clientX: 200, clientY: 0 })
+    expect(wrapper.attributes('data-flat')).toBeUndefined()
+    expect(gsap.getProperty(surface, 'transformPerspective')).toBe(900)
+
+    await wrapper.trigger('pointerleave')
+    finish()
+    expect(wrapper.attributes('data-flat')).toBe('')
+
+    // 翻回正面后不再打标记。
+    await wrapper.trigger('click')
+    expect(wrapper.attributes('data-flat')).toBeUndefined()
+    finish()
+    expect(wrapper.attributes('data-flat')).toBeUndefined()
   })
 
   it('does not flip when flipTrigger is none', async () => {

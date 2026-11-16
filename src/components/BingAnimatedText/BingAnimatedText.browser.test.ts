@@ -162,6 +162,46 @@ describe('BingAnimatedText swap in a browser', () => {
     expect(getComputedStyle(text).marginInlineEnd).toBe('0px')
   })
 
+  it.each([0.75, 1.5, 2.4])('放在缩放 %s 倍的容器里切换，退场的字留在原位，占位宽度不会被重复缩放', async (scale) => {
+    const label = ref('保存更改')
+    const root = mount(() => h('div', { style: { fontSize: '14px', lineHeight: '22px' } },
+      h(BingAnimatedText, { swap: true }, () => label.value)))
+    root.style.transform = `scale(${scale})`
+    root.style.transformOrigin = '0 0'
+    const text = root.querySelector<HTMLElement>('.bing-animated-text')!
+    const range = document.createRange()
+    const walker = document.createTreeWalker(root.querySelector('.bing-animated-text__content')!, NodeFilter.SHOW_TEXT)
+    let node = walker.nextNode()
+    while (node && !node.nodeValue!.includes('保存更改')) node = walker.nextNode()
+    const start = node!.nodeValue!.indexOf('保存更改')
+    const before = text.getBoundingClientRect()
+    // 切换前每个字在屏幕上的位置。
+    const previous = [...'保存更改'].map((_, index) => {
+      range.setStart(node!, start + index)
+      range.setEnd(node!, start + index + 1)
+      return range.getBoundingClientRect()
+    })
+
+    label.value = '保存中'
+    await nextTick()
+    const timeline = gsap.getTweensOf(text).find(tween => tween.duration() > 0)!.parent as gsap.core.Timeline
+    timeline.pause().time(0)
+
+    // 屏幕上占据的宽度仍是旧宽度：外边距按布局像素补偿，再由容器缩放一次。
+    const occupied = text.getBoundingClientRect().width +
+      Number.parseFloat(getComputedStyle(text).marginInlineEnd) * scale
+    expect(Math.abs(occupied - before.width)).toBeLessThanOrEqual(1)
+
+    const ghosts = [...root.querySelectorAll<HTMLElement>('.bing-animated-text__ghost')]
+    expect(ghosts.map(ghost => ghost.textContent)).toEqual(['更', '改'])
+    ghosts.forEach((ghost, index) => {
+      range.selectNodeContents(ghost)
+      const rect = range.getBoundingClientRect()
+      expect(Math.abs(rect.left - previous[index + 2].left)).toBeLessThanOrEqual(0.6 * Math.max(1, scale))
+      expect(Math.abs(rect.top - previous[index + 2].top)).toBeLessThanOrEqual(0.6 * Math.max(1, scale))
+    })
+  })
+
   it('拆字副本与原文保持同一行，不会因空格宽度误差多换一行', async () => {
     const count = ref(12)
     const root = mount(() => h('div', { style: { display: 'flex', fontSize: '14px', lineHeight: '22px' } },

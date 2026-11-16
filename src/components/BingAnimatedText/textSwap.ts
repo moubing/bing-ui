@@ -1,10 +1,21 @@
-/** 文字切换时记录的单个字形：位置相对于组件根元素左上角。 */
+/** 文字切换时记录的单个字形：位置相对于组件根元素左上角，单位是布局像素。 */
 export interface MeasuredChar {
   text: string
   x: number
   y: number
   /** 与组件根元素不同的字体样式，例如插槽里的 <strong>，用于还原退场的字。 */
   style?: GhostCharStyle
+}
+
+/**
+ * 测量基准：组件根元素在视口里的左上角，以及视口像素相对布局像素的比例。
+ * 祖先带 transform: scale 时比例不为 1；测量值除以它之后才能写回 left / top / transform。
+ */
+export interface MeasureOrigin {
+  left: number
+  top: number
+  scaleX: number
+  scaleY: number
 }
 
 export type GhostCharStyle = Partial<Record<(typeof GHOST_STYLE_KEYS)[number], string>>
@@ -66,7 +77,7 @@ function createStyleReader(base: Element) {
  * 测量容器内每个非空白字形的位置；超过 limit 时返回 undefined，避免长文本做逐字动画。
  * 只读取布局，不改动 Vue 持有的节点。
  */
-export function measureTextChars(container: Element, origin: DOMRect, limit: number) {
+export function measureTextChars(container: Element, origin: MeasureOrigin, limit: number) {
   const doc = container.ownerDocument
   const range = doc.createRange()
   const walker = doc.createTreeWalker(container, 4 /* NodeFilter.SHOW_TEXT */)
@@ -84,8 +95,8 @@ export function measureTextChars(container: Element, origin: DOMRect, limit: num
       const rect = range.getBoundingClientRect()
       chars.push({
         text: segment,
-        x: rect.left - origin.left,
-        y: rect.top - origin.top,
+        x: (rect.left - origin.left) / origin.scaleX,
+        y: (rect.top - origin.top) / origin.scaleY,
         style: readStyle(node.parentElement),
       })
     }
@@ -95,7 +106,7 @@ export function measureTextChars(container: Element, origin: DOMRect, limit: num
 }
 
 /** 测量已拆分的字符元素，使用与 measureTextChars 相同的文字区域口径。 */
-export function measureCharElements(elements: Element[], origin: DOMRect, styleBase?: Element) {
+export function measureCharElements(elements: Element[], origin: MeasureOrigin, styleBase?: Element) {
   const first = elements[0]
   if (!first) return []
 
@@ -107,15 +118,15 @@ export function measureCharElements(elements: Element[], origin: DOMRect, styleB
     const rect = range.getBoundingClientRect()
     return {
       text: element.textContent ?? '',
-      x: rect.left - origin.left,
-      y: rect.top - origin.top,
+      x: (rect.left - origin.left) / origin.scaleX,
+      y: (rect.top - origin.top) / origin.scaleY,
       style: readStyle?.(element),
     }
   })
 }
 
 /** 拆字会逐个舍入行内盒子的宽度；按原文坐标校正，避免混排文字在收尾时挪动。 */
-export function alignCharElements(container: Element, elements: HTMLElement[], origin: DOMRect) {
+export function alignCharElements(container: Element, elements: HTMLElement[], origin: MeasureOrigin) {
   const measured = measureCharElements(elements, origin)
   const original = measureTextChars(container, origin, elements.length)
   if (!original || original.length !== elements.length ||

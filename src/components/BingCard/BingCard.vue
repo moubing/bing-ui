@@ -55,6 +55,15 @@ const isFlipped = ref(false)
 const isPressing = ref(false)
 
 let ctx: gsap.Context | undefined
+/** 入场触发条件：卡片露出这么多、且离视口底边有这么远。 */
+const ENTRANCE_THRESHOLD = 0.18
+const ENTRANCE_BOTTOM_INSET = 0.08
+/** 等待入场期间打在根元素上的标记，对应样式里把卡面藏起来。 */
+const ENTRANCE_PENDING = 'data-entrance-pending'
+/** 翻到背面并停稳后打在根元素上的标记，对应样式里撤掉透视。 */
+const FLAT = 'data-flat'
+const SURFACE_PERSPECTIVE = 900
+
 let observer: IntersectionObserver | undefined
 let longPressTween: gsap.core.Tween | undefined
 let flipTween: gsap.core.Tween | undefined
@@ -178,6 +187,39 @@ function canAnimateInteraction() {
   )
 }
 
+/**
+ * 停在背面时卡面是一个带透视的 180° 旋转，浏览器会把这样的图层按近似精度栅格化再拉伸，
+ * 文字在多数缩放比例下发虚。背面停稳、没有倾斜时画面是平的，透视不起作用，
+ * 所以这时把两处透视都撤掉；卡面再动起来之前由 restoreDepth 还原。
+ */
+function flattenAtRest() {
+  const root = rootRef.value
+  const surface = surfaceRef.value
+
+  if (!root || !surface || !isFlipped.value) {
+    return
+  }
+
+  root.setAttribute(FLAT, '')
+  gsap.set(surface, { transformPerspective: 0 })
+}
+
+function restoreDepth() {
+  const root = rootRef.value
+  const surface = surfaceRef.value
+
+  if (!root?.hasAttribute(FLAT)) {
+    return
+  }
+
+  root.removeAttribute(FLAT)
+
+  // 先直接写回，不让接下来的补间把透视从 0 一路插值上来。
+  if (surface) {
+    gsap.set(surface, { transformPerspective: SURFACE_PERSPECTIVE })
+  }
+}
+
 function handlePointerMove(event: PointerEvent) {
   cancelLongPressIfMoved(event)
 
@@ -204,10 +246,11 @@ function handlePointerMove(event: PointerEvent) {
   const rotateY = (pointerX - 0.5) * maxTilt * 2
   const rotateX = (0.5 - pointerY) * maxTilt * 2
 
+  restoreDepth()
   gsap.to(surface, {
     ...getTiltRotationVars(rotateX, rotateY),
     scale: Math.max(1, props.tiltScale),
-    transformPerspective: 900,
+    transformPerspective: SURFACE_PERSPECTIVE,
     transformOrigin: '50% 50%',
     duration: 0.34,
     ease: 'power3.out',
@@ -242,6 +285,7 @@ function resetTilt() {
       ease: 'elastic.out(1, 0.72)',
       overwrite: true,
       force3D: true,
+      onComplete: flattenAtRest,
     })
   }
 
@@ -266,7 +310,7 @@ function getRotateEntranceVars() {
       z: props.flipAxis === 'z' ? 0 : -120,
       [rotationProperty]: rotationValue,
       scale: 0.96,
-      transformPerspective: 900,
+      transformPerspective: SURFACE_PERSPECTIVE,
       transformOrigin: '50% 50%',
     },
     to: {
@@ -389,10 +433,11 @@ function flipCard(toBack = !isFlipped.value) {
 
   isFlipped.value = toBack
 
+  restoreDepth()
   const tween = gsap.to(surface, {
     ...getBackRotationVars(),
     scale: 1,
-    transformPerspective: 900,
+    transformPerspective: SURFACE_PERSPECTIVE,
     transformOrigin: '50% 50%',
     duration: 0.68,
     ease: 'power3.inOut',
@@ -401,6 +446,7 @@ function flipCard(toBack = !isFlipped.value) {
     onComplete: () => {
       if (flipTween === tween) {
         isFlipAnimating = false
+        flattenAtRest()
       }
     },
     onInterrupt: () => {
@@ -540,6 +586,10 @@ function playEntrance() {
   const root = rootRef.value
   const surface = surfaceRef.value
 
+  // fromTo 会立刻写入起始状态，这里可以放心交还可见性。
+  root?.removeAttribute(ENTRANCE_PENDING)
+  restoreDepth()
+
   if (!root || !surface || props.disabled) {
     return
   }
@@ -593,9 +643,29 @@ function playEntrance() {
   }, root)
 }
 
+/**
+ * 卡片能否在视口里露出足够的面积来触发入场。
+ * 比视口或裁切它的滚动容器大很多的卡片永远达不到阈值，这种情况不能提前隐藏。
+ */
+function canReachEntranceThreshold(root: HTMLElement) {
+  const rect = root.getBoundingClientRect()
+  let width = window.innerWidth
+  let height = window.innerHeight * (1 - ENTRANCE_BOTTOM_INSET)
+
+  for (let parent = root.parentElement; parent; parent = parent.parentElement) {
+    const style = window.getComputedStyle(parent)
+    if (style.overflowX !== 'visible') width = Math.min(width, parent.clientWidth)
+    if (style.overflowY !== 'visible') height = Math.min(height, parent.clientHeight)
+  }
+
+  return Math.min(width, rect.width) * Math.min(height, rect.height) >=
+    rect.width * rect.height * ENTRANCE_THRESHOLD
+}
+
 function setupEntranceObserver() {
   observer?.disconnect()
   observer = undefined
+  rootRef.value?.removeAttribute(ENTRANCE_PENDING)
 
   if (!isBrowser()) {
     playEntrance()
@@ -618,6 +688,11 @@ function setupEntranceObserver() {
     return
   }
 
+  // 观察结果是异步送达的；在那之前先藏起来，否则卡片会先完整显示一帧，再消失、再入场。
+  if (!props.disabled && !(hasEntered.value && props.entranceOnce) && canReachEntranceThreshold(root)) {
+    root.setAttribute(ENTRANCE_PENDING, '')
+  }
+
   observer = new IntersectionObserver(
     (entries) => {
       const isVisible = entries.some((entry) => entry.isIntersecting)
@@ -634,8 +709,8 @@ function setupEntranceObserver() {
       }
     },
     {
-      threshold: 0.18,
-      rootMargin: '0px 0px -8% 0px',
+      threshold: ENTRANCE_THRESHOLD,
+      rootMargin: `0px 0px -${ENTRANCE_BOTTOM_INSET * 100}% 0px`,
     },
   )
 
@@ -757,6 +832,14 @@ onBeforeUnmount(() => {
   color: var(--bing-text);
   perspective: 980px;
   perspective-origin: 50% 50%;
+}
+
+.bing-card[data-entrance-pending] > .bing-card__surface {
+  visibility: hidden;
+}
+
+.bing-card[data-flat] {
+  perspective: none;
 }
 
 .bing-card--rounded-none {

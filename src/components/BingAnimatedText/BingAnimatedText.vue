@@ -9,9 +9,10 @@ import type {
   BingAnimatedTextProps,
   BingAnimatedTextShineDirection,
 } from './BingAnimatedText.types'
+import { getLayoutScale } from '../../motion/layoutScale'
 import { useReducedMotion } from '../../motion/reducedMotion'
 import { alignCharElements, canMeasureText, matchChars, measureCharElements, measureTextChars } from './textSwap'
-import type { MeasuredChar } from './textSwap'
+import type { MeasuredChar, MeasureOrigin } from './textSwap'
 
 const SHINE_PROGRESS = '--animated-text-shine-p'
 const SWAP_OFFSET = '--animated-text-swap-offset'
@@ -475,6 +476,13 @@ function currentSwapOffset(root: HTMLElement) {
   return Number.parseFloat(root.style.getPropertyValue(SWAP_OFFSET)) || 0
 }
 
+/** 根元素的测量基准；宽度换算回布局像素，放在缩放的容器里时位移和占位宽度才不会被重复缩放。 */
+function measureRoot(root: HTMLElement): MeasureOrigin & { width: number } {
+  const rect = root.getBoundingClientRect()
+  const scale = getLayoutScale(root, rect)
+  return { left: rect.left, top: rect.top, scaleX: scale.x, scaleY: scale.y, width: rect.width / scale.x }
+}
+
 function canSwap() {
   return props.swap && !props.disabled && !prefersReducedMotion()
 }
@@ -484,7 +492,7 @@ function captureSwapSnapshot(): SwapSnapshot | undefined {
   const content = contentRef.value
   if (!root || !content || !canSwap() || !canMeasureText(root.ownerDocument)) return undefined
 
-  const origin = root.getBoundingClientRect()
+  const origin = measureRoot(root)
   const visibleChars = swapTimeline || root.hasAttribute('data-jump-ready') ? split?.chars : undefined
   // 副本可见时从副本测量，切换可以从跳动中途或上一次切换中途自然接上。
   const chars = visibleChars?.length
@@ -502,7 +510,7 @@ function captureSwapSnapshot(): SwapSnapshot | undefined {
   }
 }
 
-function placeGhosts(host: HTMLElement, chars: MeasuredChar[], origin: DOMRect, restColor: string) {
+function placeGhosts(host: HTMLElement, chars: MeasuredChar[], origin: MeasureOrigin, restColor: string) {
   host.replaceChildren()
   if (!chars.length) return []
 
@@ -549,7 +557,7 @@ function runSwap(snapshot: SwapSnapshot) {
 
   root.setAttribute('data-swapping', 'true')
 
-  const origin = root.getBoundingClientRect()
+  const origin = measureRoot(root)
   const next = alignCharElements(content, chars, origin)
   const fontSize = Number.parseFloat(getComputedStyle(root).fontSize) || 16
   const travel = fontSize * 0.6
